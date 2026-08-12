@@ -1,3 +1,14 @@
+////////////////////////////////////////////////////////////////////////////////
+// 
+// Copyright (c) 2026 Buzz Pendarvis
+//
+// Filename: wb_rv_decode.v
+// Project: WishboneRV64
+// Description: Decodes instructions and fetches register values from the
+//   register file (which is declared inside of this module too)
+//
+////////////////////////////////////////////////////////////////////////////////
+
 module decode_stage (
     // generic control signals
     input wire i_clk,

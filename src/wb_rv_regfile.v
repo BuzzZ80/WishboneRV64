@@ -1,3 +1,14 @@
+////////////////////////////////////////////////////////////////////////////////
+// 
+// Copyright (c) 2026 Buzz Pendarvis
+//
+// Filename: wb_rv_regfile.v
+// Project: WishboneRV64
+// Description: RISC-V register file. register 0 always maps to zero, all
+//   others are general purpose.
+//
+////////////////////////////////////////////////////////////////////////////////
+
 module regfile (
     input wire i_clk,
     input wire i_wr_en,
