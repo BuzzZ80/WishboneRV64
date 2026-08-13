@@ -79,8 +79,10 @@ module decode_stage (
         else if (o_valid && i_ready)
             r_valid <= 0;   // reset if next-stage handshake occurs and it's not being loaded
         
-        r_instr <= i_instr;
-        r_pc <= i_pc;
+        if (o_ready && i_valid) begin
+            r_instr <= i_instr;
+            r_pc <= i_pc;
+        end
     end
     
     always @ (*) begin

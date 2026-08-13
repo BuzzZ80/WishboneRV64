@@ -112,19 +112,21 @@ module exec_stage(
         else if (o_valid && i_ready)
             r_valid <= 0;   // reset if next-stage handshake occurs and it's not being loaded
         
-        r_pc <= i_pc;
-        r_imm <= i_imm;
-        r_rs1 <= i_rs1_value;
-        r_rs2 <= i_rs2_value;
-        r_use_pc <= i_use_pc;
-        r_use_imm <= i_use_imm;
-        r_op <= i_alu_op;
-        r_load <= i_load;
-        r_store <= i_store;
-        r_link <= i_link;
-        r_wb_addr <= i_wb_addr;
-        r_jump <= i_jump;
-        r_branch <= i_branch;
-        r_branch_cond <= i_branch_cond;
+        if (o_ready && i_valid) begin
+            r_pc <= i_pc;
+            r_imm <= i_imm;
+            r_rs1 <= i_rs1_value;
+            r_rs2 <= i_rs2_value;
+            r_use_pc <= i_use_pc;
+            r_use_imm <= i_use_imm;
+            r_op <= i_alu_op;
+            r_load <= i_load;
+            r_store <= i_store;
+            r_link <= i_link;
+            r_wb_addr <= i_wb_addr;
+            r_jump <= i_jump;
+            r_branch <= i_branch;
+            r_branch_cond <= i_branch_cond;
+        end
     end
 endmodule
