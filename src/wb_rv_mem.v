@@ -48,9 +48,12 @@ module memory_stage(
     output reg [53:0] o_jump_base,
     output reg [53:0] o_jump_offset
 );
-    reg r_valid;
-    
-    reg r_fsm_state;
+    // states:
+    // s0: stage ready, no pending request
+    // s1: stage ready but awaiting response
+    // s2: stage valid, no pending request
+    // s3: stage valid, awaiting response
+    reg [1:0] r_fsm_state;
     
     // pipeline registers
     reg [63:0] r_alu_result;
@@ -62,27 +65,87 @@ module memory_stage(
     reg r_link;
     reg [4:0] r_wb_addr;
     
+    // outgoing request register
+    reg [4:0] r_rq_buffer_wb_addr;
+    
+    // logic
+    reg is_memory_access;
+    
     always @ (*) begin
+        is_memory_access = r_load || r_store;
+        
+        if (i_rst) begin
+            o_cyc = 0;
+            o_stb = 0;
+            o_we = 0;
+            o_ready = 0;
+            o_valid = 0;
+        end
+        else case (r_fsm_state)
+            // invalid & buffer empty
+            0: begin
+                o_cyc = 0; // nothing to request
+                o_stb = 0;
+                o_we = 0;
+                o_ready = 1;
+                o_valid = 0;
+            end
+            // invalid & buffer full
+            1: begin
+                o_cyc = 1; // waiting for a response
+                o_stb = 0;
+                o_we = 0;
+                o_ready = 1; 
+                o_valid = i_ack; // done when response is received
+            end
+            // valid & buffer empty
+            // (non-memory instructions executed here, since they can only be executed when the buffer is empty)
+            2: begin
+                o_cyc = is_memory_access;
+                o_stb = is_memory_access;
+                o_we = r_store;
+                o_ready = !i_stall;
+                o_valid = !is_memory_access; // non-memory-accesses have nothing to wait for
+            end
+            // valid & buffer full
+            3: begin
+                o_cyc = 1;
+                o_stb = !i_stall && i_ack && is_memory_access;
+                o_we = r_store;
+                o_ready = !i_stall && i_ack && is_memory_access; // instruction moves forward into buffer if it's a memory access. otherwise it sits still here.
+                o_valid = i_ack;
+            end
+        endcase
         // ready for new instructions when not stalling, and invalid or handshaking with next
-        o_ready = !i_stall && (!r_valid || o_valid);
-        o_valid = !i_rst && r_valid && (!(r_load || r_store) || o_cyc && i_ack);
-
         o_adr = r_alu_result[52:0];
         o_dat = r_data;
         
-        o_jump = r_jump && r_valid;
+        o_jump = r_jump && (r_fsm_state == 2);
         o_jump_base = r_addr;
         o_jump_offset = r_data[55:2];
     end
     
     always @ (posedge i_clk) begin
-        if (i_rst)
-            r_valid <= 0;
-        else if (i_valid && o_ready)
-            r_valid <= 1;   // set whenever previous-stage handshake occurs
-        else if (o_valid)
-            r_valid <= 0;   // reset if next-stage handshake occurs and it's not being loaded
-            
+        if (i_rst) begin
+            r_fsm_state <= 0;
+        end
+        else case (r_fsm_state)
+            0: if (i_valid) r_fsm_state <= 2;
+            1: r_fsm_state <= {i_valid, !i_ack};
+            2: if (!i_stall) r_fsm_state <= {i_valid, is_memory_access};
+            3: if (i_stall) r_fsm_state <= {1'b1, !i_ack};
+                else r_fsm_state <= is_memory_access ? {i_valid, 1'b1} : 2;
+        endcase
+        
+        // buffer must get loaded:
+        // - memory instruction in pipeline registers, no outstanding requests or request is being answered
+        // buffer may get loaded:
+        // - when there are no outstanding requests
+        // - when an outstanding request is being answered
+        if (!r_fsm_state[0] || (o_cyc && i_ack)) begin
+            r_rq_buffer_wb_addr <= r_wb_addr;
+        end
+         
         if (o_ready && i_valid) begin
             r_alu_result <= i_alu_result;
             r_addr <= i_addr;
