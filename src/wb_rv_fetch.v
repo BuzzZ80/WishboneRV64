@@ -9,8 +9,8 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 module fetch_stage(
-    input i_clk,
-    input i_rst,
+    input wire i_clk,
+    input wire i_rst,
     
     // wishbone bus for fetching instructions
     output reg o_cyc,
@@ -25,12 +25,12 @@ module fetch_stage(
     output reg o_valid,
     // next-stage data
     output reg [31:0] o_instr,
-    output reg [53:0] o_pc//,
+    output reg [53:0] o_pc,
     
     // control inputs
-    //input wire in_ctrl_jump,
-    //input wire [53:0] in_ctrl_jump_base,
-    //input wire [53:0] in_ctrl_jump_offset
+    input wire in_ctrl_jump,
+    input wire [53:0] in_ctrl_jump_base,
+    input wire [53:0] in_ctrl_jump_offset
 );
     // program counter
     reg [52:0] r_pc;
