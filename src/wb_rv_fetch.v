@@ -28,7 +28,7 @@ module fetch_stage(
     output reg [53:0] o_pc,
     
     // control inputs
-    input wire in_ctrl_jump,
+    input wire i_ctrl_jump,
     input wire [53:0] i_ctrl_jump_base,
     input wire [53:0] i_ctrl_jump_offset
 );
