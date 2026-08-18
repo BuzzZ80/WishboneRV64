@@ -31,23 +31,122 @@ module core(
     output wire [52:0] o_data_adr
 );  
     fetch_stage _fetch (
-
+        .i_clk(),
+        .i_rst(),
+        .o_cyc(),
+        .o_stb(),
+        .i_ack(),
+        .i_stall(),
+        .i_dat(),
+        .o_adr(),
+        .i_ready(),
+        .o_valid(),
+        .o_instr(),
+        .o_pc(),
+        .in_ctrl_jump(),
+        .in_ctrl_jump_base(),
+        .in_ctrl_jump_offset()
     );
 
     decode_stage _decode (
-
+        .i_clk(),
+        .i_rst(),
+        .o_ready(),
+        .i_valid(),
+        .i_instr(),
+        .i_pc(),
+        .i_ready(),
+        .o_valid(),
+        .o_pc(),
+        .o_imm(),
+        .o_rs1_value(),
+        .o_rs2_value(),
+        .o_use_pc(),
+        .o_use_imm(),
+        .o_alu_op(),
+        .o_load(),
+        .o_store(),
+        .o_link(),
+        .o_wb_addr(),
+        .o_jump(),
+        .o_branch(),
+        .o_branch_cond(),
+        .i_stall(),
+        .i_wb_addr(),
+        .i_wb_value(),
+        .o_rs1_addr(),
+        .o_rs2_addr()
     );
 
     exec_stage _exec (
-
+        .i_clk(),
+        .i_rst(),
+        .o_ready(),
+        .i_valid(),
+        .i_pc(),
+        .i_imm(),
+        .i_rs1_value(),
+        .i_rs2_value(),
+        .i_use_pc(),
+        .i_use_imm(),
+        .i_alu_op(),
+        .i_load(),
+        .i_store(),
+        .i_link(),
+        .i_wb_addr(),
+        .i_jump(),
+        .i_branch(),
+        .i_branch_cond(),
+        .i_ready(),
+        .o_valid(),
+        .o_alu_result(),
+        .o_addr(),
+        .o_data(),
+        .o_load(),
+        .o_store(),
+        .o_jump(),
+        .o_link(),
+        .o_wb_addr(),
+        .i_stall()
     );
 
     memory_stage _memory (
-
+        .i_clk(),
+        .i_rst(),
+        .o_cyc(),
+        .o_stb(),
+        .o_we(),
+        .i_ack(),
+        .i_stall(),
+        .i_dat(),
+        .o_dat(),
+        .o_adr(),
+        .o_ready(),
+        .i_valid(),
+        .i_alu_result(),
+        .i_addr(),
+        .i_data(),
+        .i_load(),
+        .i_store(),
+        .i_jump(),
+        .i_link(),
+        .i_wb_addr(),
+        .o_valid(),
+        .o_wb_value(),
+        .o_wb_addr(),
+        .o_jump(),
+        .o_jump_base(),
+        .o_jump_offset()
     );
     
     writeback_stage _writeback (
-
+        .i_clk(),
+        .i_rst(),
+        .i_valid(),
+        .i_wb_value(),
+        .i_wb_addr(),
+        .o_wb_value(),
+        .o_wb_addr()
     );
 
 endmodule
