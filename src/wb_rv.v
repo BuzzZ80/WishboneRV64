@@ -30,5 +30,24 @@ module core(
     output wire [63:0] o_data_dat,
     output wire [52:0] o_data_adr
 );  
+    fetch_stage _fetch (
+
+    );
+
+    decode_stage _decode (
+
+    );
+
+    exec_stage _exec (
+
+    );
+
+    memory_stage _memory (
+
+    );
+    
+    writeback_stage _writeback (
+
+    );
 
 endmodule
