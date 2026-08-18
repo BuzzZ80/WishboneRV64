@@ -28,7 +28,7 @@ module writeback_stage (
     reg [4:0] r_wb_addr;
     
     always @ (posedge i_clk) begin
-        r_valid <= i_valid;
+        r_valid <= i_rst ? 0 : i_valid;
         r_wb_value <= i_wb_value;
         r_wb_addr <= i_wb_addr;
     end

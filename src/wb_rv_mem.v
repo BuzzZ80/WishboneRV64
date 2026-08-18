@@ -46,7 +46,13 @@ module memory_stage(
     // jump control outputs
     output reg o_jump,
     output reg [53:0] o_jump_base,
-    output reg [53:0] o_jump_offset
+    output reg [53:0] o_jump_offset,
+    
+    // hazard detection related
+    output reg [4:0] o_rd_1,
+    output reg o_rd_1_valid,
+    output reg [4:0] o_rd_2,
+    output reg o_rd_2_valid
 );
     // states:
     // s0: stage ready, no pending request
@@ -132,6 +138,11 @@ module memory_stage(
         o_jump = r_jump && (r_fsm_state == 2);
         o_jump_base = r_addr;
         o_jump_offset = r_data[55:2];
+        
+        o_rd_1 = r_wb_addr;
+        o_rd_1_valid = r_fsm_state[1];
+        o_rd_2 = r_rq_buffer_wb_addr;
+        o_rd_2_valid = r_fsm_state[0];
     end
     
     always @ (posedge i_clk) begin

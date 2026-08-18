@@ -31,6 +31,7 @@ module core(
     output wire [63:0] o_data_dat,
     output wire [52:0] o_data_adr
 );  
+    // connections between pipeline stages
     wire fetch_valid;
     wire [31:0] fetch_instr;
     wire [53:0] fetch_pc;
@@ -51,6 +52,9 @@ module core(
     wire decode_jump;
     wire decode_branch;
     wire [1:0] decode_branch_cond;
+    wire [4:0] decode_rs1;
+    wire [4:0] decode_rs2;
+    wire decode_regs_valid;
 
     wire exec_ready;
     wire exec_valid;
@@ -62,6 +66,8 @@ module core(
     wire exec_jump;
     wire exec_link;
     wire [4:0] exec_wb_addr;
+    wire [4:0] exec_rd;
+    wire exec_rd_valid;
 
     wire memory_ready;
     wire memory_valid;
@@ -70,9 +76,16 @@ module core(
     wire memory_jump;
     wire [53:0] memory_jump_base;
     wire [53:0] memory_jump_offset;
+    wire [4:0] memory_rd_1;
+    wire memory_rd_1_valid;
+    wire [4:0] memory_rd_2;
+    wire memory_rd_2_valid;
     
     wire [63:0] writeback_wb_value;
     wire [4:0] writeback_wb_addr;
+    
+    // hazard logic
+    reg read_after_write;
 
     fetch_stage _fetch (
         .i_clk(i_clk),
@@ -115,11 +128,12 @@ module core(
         .o_jump(decode_jump),
         .o_branch(decode_branch),
         .o_branch_cond(decode_branch_cond),
-        .i_stall(0),
+        .i_stall(read_after_write),
         .i_wb_addr(writeback_wb_addr),
         .i_wb_value(writeback_wb_value),
-        .o_rs1_addr(),
-        .o_rs2_addr()
+        .o_rs1_addr(decode_rs1),
+        .o_rs2_addr(decode_rs2),
+        .o_regs_valid(decode_regs_valid)
     );
 
     exec_stage _exec (
@@ -151,7 +165,9 @@ module core(
         .o_jump(exec_jump),
         .o_link(exec_link),
         .o_wb_addr(exec_wb_addr),
-        .i_stall(0)
+        .i_stall(0),
+        .o_rd(exec_rd),
+        .o_rd_valid(exec_rd_valid)
     );
 
     memory_stage _memory (
@@ -180,7 +196,11 @@ module core(
         .o_wb_addr(memory_wb_addr),
         .o_jump(memory_jump),
         .o_jump_base(memory_jump_base),
-        .o_jump_offset(memory_jump_offset)
+        .o_jump_offset(memory_jump_offset),
+        .o_rd_1(memory_rd_1),
+        .o_rd_1_valid(memory_rd_1_valid),
+        .o_rd_2(memory_rd_2),
+        .o_rd_2_valid(memory_rd_2_valid)
     );
     
     writeback_stage _writeback (
@@ -192,5 +212,14 @@ module core(
         .o_wb_value(writeback_wb_value),
         .o_wb_addr(writeback_wb_addr)
     );
-
+    
+    always @ (*) begin
+        read_after_write = decode_regs_valid && (
+            (exec_rd_valid && (exec_rd != 0) && ((exec_rd == decode_rs1) || (exec_rd == decode_rs2)))
+            || (memory_rd_1_valid && (memory_rd_1 != 0) && ((memory_rd_1 == decode_rs1) || (memory_rd_1 == decode_rs2)))
+            || (memory_rd_2_valid && (memory_rd_2 != 0) && ((memory_rd_2 == decode_rs1) || (memory_rd_2 == decode_rs2)))
+            || ((writeback_wb_addr != 0) && ((writeback_wb_addr == decode_rs1) || (writeback_wb_addr == decode_rs2)))
+        );
+    end
+    
 endmodule

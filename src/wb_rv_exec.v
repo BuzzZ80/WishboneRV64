@@ -46,7 +46,11 @@ module exec_stage(
     output reg [4:0] o_wb_addr,
     
     // control
-    input wire i_stall
+    input wire i_stall,
+    
+    // hazard detection related
+    output reg [4:0] o_rd,
+    output reg o_rd_valid
 );
     reg r_valid;    // contents are valid
     
@@ -76,7 +80,7 @@ module exec_stage(
         .alt_op(r_op[3]),
         .word(r_op[4]),
         .m_mode(r_op[5]),
-        .in1(r_use_pc ? {8'b0, r_pc, 1'b0} : r_rs1),
+        .in1(r_use_pc ? {8'b0, r_pc, 2'b0} : r_rs1),
         .in2(r_use_imm ? r_imm : r_rs2),
         .out(alu_result),
         .cout(/*alu_cout*/),
@@ -102,6 +106,9 @@ module exec_stage(
         o_store = r_store;
         o_link = r_link;
         o_wb_addr = r_wb_addr;
+        
+        o_rd = r_wb_addr;
+        o_rd_valid = r_valid;
     end
     
     always @ (posedge i_clk) begin

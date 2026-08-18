@@ -45,7 +45,8 @@ module decode_stage (
     input wire [4:0] i_wb_addr,
     input wire [63:0] i_wb_value,
     output reg [4:0] o_rs1_addr, // used for detecting hazards
-    output reg [4:0] o_rs2_addr
+    output reg [4:0] o_rs2_addr,
+    output reg o_regs_valid
 );
     reg r_valid;
     reg [31:0] r_instr;
@@ -89,7 +90,8 @@ module decode_stage (
         // ready for new instructions when not stalling, and invalid or handshaking with next
         o_ready = !i_stall && (!r_valid || (o_valid && i_ready));
         // output is valid when internal state is valid and not resetting
-        o_valid = !i_rst && r_valid;
+        o_valid = !i_stall && r_valid;
+        o_regs_valid = r_valid;
         
         imm_type = 0;
         o_use_pc = 0;
