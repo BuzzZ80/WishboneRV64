@@ -64,7 +64,12 @@ module core(
     wire [4:0] exec_wb_addr;
 
     wire memory_ready;
+    wire memory_valid;
+    wire [63:0] memory_wb_value;
+    wire [4:0] memory_wb_addr;
     
+    wire [63:0] writeback_wb_value;
+    wire [4:0] writeback_wb_addr;
 
     fetch_stage _fetch (
         .i_clk(i_clk),
@@ -167,7 +172,7 @@ module core(
         .i_jump(exec_jump),
         .i_link(exec_link),
         .i_wb_addr(exec_wb_addr),
-        .o_valid(exec_valid),
+        .o_valid(memory_valid),
         .o_wb_value(),
         .o_wb_addr(),
         .o_jump(),
@@ -176,13 +181,13 @@ module core(
     );
     
     writeback_stage _writeback (
-        .i_clk(),
-        .i_rst(),
-        .i_valid(),
-        .i_wb_value(),
-        .i_wb_addr(),
-        .o_wb_value(),
-        .o_wb_addr()
+        .i_clk(i_clk),
+        .i_rst(i_rst),
+        .i_valid(memory_valid),
+        .i_wb_value(memory_wb_value),
+        .i_wb_addr(memory_wb_addr),
+        .o_wb_value(writeback_wb_value),
+        .o_wb_addr(writeback_wb_addr)
     );
 
 endmodule
