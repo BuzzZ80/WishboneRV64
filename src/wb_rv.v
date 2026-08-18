@@ -33,9 +33,27 @@ module core(
 );  
     wire fetch_valid;
     wire [31:0] fetch_instr;
-    wire [52:0] fetch_pc;
+    wire [53:0] fetch_pc;
 
     wire decode_ready;
+    wire decode_valid;
+    wire [53:0] decode_pc;
+    wire [63:0] decode_imm;
+    wire [63:0] decode_rs1_value;
+    wire [63:0] decode_rs2_value;
+    wire decode_use_pc;
+    wire decode_use_imm;
+    wire [5:0] decode_alu_op;
+    wire decode_load;
+    wire decode_store;
+    wire decode_link;
+    wire [4:0] decode_wb_addr;
+    wire decode_jump;
+    wire decode_branch;
+    wire [1:0] decode_branch_cond;
+
+    wire exec_ready;
+    
 
     fetch_stage _fetch (
         .i_clk(i_clk),
@@ -62,22 +80,22 @@ module core(
         .i_valid(fetch_valid),
         .i_instr(fetch_instr),
         .i_pc(fetch_pc),
-        .i_ready(),
-        .o_valid(),
-        .o_pc(),
-        .o_imm(),
-        .o_rs1_value(),
-        .o_rs2_value(),
-        .o_use_pc(),
-        .o_use_imm(),
-        .o_alu_op(),
-        .o_load(),
-        .o_store(),
-        .o_link(),
-        .o_wb_addr(),
-        .o_jump(),
-        .o_branch(),
-        .o_branch_cond(),
+        .i_ready(exec_ready),
+        .o_valid(decode_valid),
+        .o_pc(decode_pc),
+        .o_imm(decode_imm),
+        .o_rs1_value(decode_rs1_value),
+        .o_rs2_value(decode_rs2_value),
+        .o_use_pc(decode_use_pc),
+        .o_use_imm(decode_use_imm),
+        .o_alu_op(decode_alu_op),
+        .o_load(decode_load),
+        .o_store(decode_store),
+        .o_link(decode_link),
+        .o_wb_addr(decode_wb_addr),
+        .o_jump(decode_jump),
+        .o_branch(decode_branch),
+        .o_branch_cond(decode_branch_cond),
         .i_stall(),
         .i_wb_addr(),
         .i_wb_value(),
@@ -86,24 +104,24 @@ module core(
     );
 
     exec_stage _exec (
-        .i_clk(),
-        .i_rst(),
-        .o_ready(),
-        .i_valid(),
-        .i_pc(),
-        .i_imm(),
-        .i_rs1_value(),
-        .i_rs2_value(),
-        .i_use_pc(),
-        .i_use_imm(),
-        .i_alu_op(),
-        .i_load(),
-        .i_store(),
-        .i_link(),
-        .i_wb_addr(),
-        .i_jump(),
-        .i_branch(),
-        .i_branch_cond(),
+        .i_clk(i_clk),
+        .i_rst(i_rst),
+        .o_ready(exec_ready),
+        .i_valid(decode_valid),
+        .i_pc(decode_pc),
+        .i_imm(decode_imm),
+        .i_rs1_value(decode_rs1_value),
+        .i_rs2_value(decode_rs2_value),
+        .i_use_pc(decode_use_pc),
+        .i_use_imm(decode_use_imm),
+        .i_alu_op(decode_alu_op),
+        .i_load(decode_load),
+        .i_store(decode_store),
+        .i_link(decode_link),
+        .i_wb_addr(decode_wb_addr),
+        .i_jump(decode_jump),
+        .i_branch(decode_branch),
+        .i_branch_cond(decode_branch_cond),
         .i_ready(),
         .o_valid(),
         .o_alu_result(),
