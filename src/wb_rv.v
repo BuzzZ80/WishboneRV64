@@ -17,6 +17,7 @@ module core(
     output wire o_instr_cyc,
     output wire o_instr_stb,
     input wire i_instr_ack,
+    input wire i_instr_stall,
     input wire [63:0] i_instr_dat,
     output wire [52:0] o_instr_adr,
     
@@ -30,31 +31,37 @@ module core(
     output wire [63:0] o_data_dat,
     output wire [52:0] o_data_adr
 );  
+    wire fetch_valid;
+    wire [31:0] fetch_instr;
+    wire [52:0] fetch_pc;
+
+    wire decode_ready;
+
     fetch_stage _fetch (
-        .i_clk(),
-        .i_rst(),
-        .o_cyc(),
-        .o_stb(),
-        .i_ack(),
-        .i_stall(),
-        .i_dat(),
-        .o_adr(),
-        .i_ready(),
-        .o_valid(),
-        .o_instr(),
-        .o_pc(),
+        .i_clk(i_clk),
+        .i_rst(i_rst),
+        .o_cyc(o_instr_cyc),
+        .o_stb(o_instr_stb),
+        .i_ack(i_instr_ack),
+        .i_stall(i_instr_stall),
+        .i_dat(i_instr_dat),
+        .o_adr(o_instr_adr),
+        .i_ready(decode_ready),
+        .o_valid(fetch_valid),
+        .o_instr(fetch_instr),
+        .o_pc(fetch_pc),
         .in_ctrl_jump(),
         .in_ctrl_jump_base(),
         .in_ctrl_jump_offset()
     );
 
     decode_stage _decode (
-        .i_clk(),
-        .i_rst(),
-        .o_ready(),
-        .i_valid(),
-        .i_instr(),
-        .i_pc(),
+        .i_clk(i_clk),
+        .i_rst(i_rst),
+        .o_ready(decode_ready),
+        .i_valid(fetch_valid),
+        .i_instr(fetch_instr),
+        .i_pc(fetch_pc),
         .i_ready(),
         .o_valid(),
         .o_pc(),
