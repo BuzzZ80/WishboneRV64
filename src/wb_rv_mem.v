@@ -108,7 +108,7 @@ module memory_stage(
                 o_cyc = is_memory_access;
                 o_stb = is_memory_access;
                 o_we = r_store;
-                o_ready = !i_stall;
+                o_ready = !is_memory_access || !i_stall;
                 o_valid = !is_memory_access; // non-memory-accesses have nothing to wait for
                 wb_value_select = 0;
             end
@@ -126,8 +126,8 @@ module memory_stage(
         o_adr = r_alu_result[52:0];
         o_dat = r_data;
         
-        o_wb_addr = r_rq_buffer_wb_addr;
-        o_wb_value = wb_value_select ? i_dat : r_data;
+        o_wb_addr = wb_value_select ? r_rq_buffer_wb_addr : r_wb_addr;
+        o_wb_value = wb_value_select ? i_dat : r_alu_result;
         
         o_jump = r_jump && (r_fsm_state == 2);
         o_jump_base = r_addr;
@@ -141,7 +141,7 @@ module memory_stage(
         else case (r_fsm_state)
             0: if (i_valid) r_fsm_state <= 2;
             1: r_fsm_state <= {i_valid, !i_ack};
-            2: if (!i_stall) r_fsm_state <= {i_valid, is_memory_access};
+            2: if (!is_memory_access || !i_stall) r_fsm_state <= {i_valid, is_memory_access};
             3: if (i_stall) r_fsm_state <= {1'b1, !i_ack};
                 else r_fsm_state <= is_memory_access ? {i_valid, 1'b1} : 2;
         endcase
