@@ -70,6 +70,7 @@ module memory_stage(
     
     // logic
     reg is_memory_access;
+    reg wb_value_select;
     
     always @ (*) begin
         is_memory_access = r_load || r_store;
@@ -80,6 +81,7 @@ module memory_stage(
             o_we = 0;
             o_ready = 0;
             o_valid = 0;
+            wb_value_select = 0;
         end
         else case (r_fsm_state)
             // invalid & buffer empty
@@ -89,6 +91,7 @@ module memory_stage(
                 o_we = 0;
                 o_ready = 1;
                 o_valid = 0;
+                wb_value_select = 0;
             end
             // invalid & buffer full
             1: begin
@@ -97,6 +100,7 @@ module memory_stage(
                 o_we = 0;
                 o_ready = 1; 
                 o_valid = i_ack; // done when response is received
+                wb_value_select = 1;
             end
             // valid & buffer empty
             // (non-memory instructions executed here, since they can only be executed when the buffer is empty)
@@ -106,6 +110,7 @@ module memory_stage(
                 o_we = r_store;
                 o_ready = !i_stall;
                 o_valid = !is_memory_access; // non-memory-accesses have nothing to wait for
+                wb_value_select = 0;
             end
             // valid & buffer full
             3: begin
@@ -114,11 +119,15 @@ module memory_stage(
                 o_we = r_store;
                 o_ready = !i_stall && i_ack && is_memory_access; // instruction moves forward into buffer if it's a memory access. otherwise it sits still here.
                 o_valid = i_ack;
+                wb_value_select = 1;
             end
         endcase
         // ready for new instructions when not stalling, and invalid or handshaking with next
         o_adr = r_alu_result[52:0];
         o_dat = r_data;
+        
+        o_wb_addr = r_rq_buffer_wb_addr;
+        o_wb_value = wb_value_select ? i_dat : r_data;
         
         o_jump = r_jump && (r_fsm_state == 2);
         o_jump_base = r_addr;
