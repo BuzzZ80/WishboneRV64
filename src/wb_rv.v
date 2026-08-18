@@ -53,6 +53,17 @@ module core(
     wire [1:0] decode_branch_cond;
 
     wire exec_ready;
+    wire exec_valid;
+    wire [63:0] exec_alu_result;
+    wire [54:0] exec_addr;
+    wire [63:0] exec_data;
+    wire exec_load;
+    wire exec_store;
+    wire exec_jump;
+    wire exec_link;
+    wire [4:0] exec_wb_addr;
+
+    wire memory_ready;
     
 
     fetch_stage _fetch (
@@ -122,22 +133,22 @@ module core(
         .i_jump(decode_jump),
         .i_branch(decode_branch),
         .i_branch_cond(decode_branch_cond),
-        .i_ready(),
-        .o_valid(),
-        .o_alu_result(),
-        .o_addr(),
-        .o_data(),
-        .o_load(),
-        .o_store(),
-        .o_jump(),
-        .o_link(),
-        .o_wb_addr(),
+        .i_ready(memory_ready),
+        .o_valid(exec_valid),
+        .o_alu_result(exec_alu_result),
+        .o_addr(exec_addr),
+        .o_data(exec_data),
+        .o_load(exec_load),
+        .o_store(exec_store),
+        .o_jump(exec_jump),
+        .o_link(exec_link),
+        .o_wb_addr(exec_wb_addr),
         .i_stall()
     );
 
     memory_stage _memory (
-        .i_clk(),
-        .i_rst(),
+        .i_clk(i_clk),
+        .i_rst(i_rst),
         .o_cyc(),
         .o_stb(),
         .o_we(),
@@ -147,16 +158,16 @@ module core(
         .o_dat(),
         .o_adr(),
         .o_ready(),
-        .i_valid(),
-        .i_alu_result(),
-        .i_addr(),
-        .i_data(),
-        .i_load(),
-        .i_store(),
-        .i_jump(),
-        .i_link(),
-        .i_wb_addr(),
-        .o_valid(),
+        .i_valid(exec_valid),
+        .i_alu_result(exec_alu_result),
+        .i_addr(exec_addr),
+        .i_data(exec_data),
+        .i_load(exec_load),
+        .i_store(exec_store),
+        .i_jump(exec_jump),
+        .i_link(exec_link),
+        .i_wb_addr(exec_wb_addr),
+        .o_valid(exec_valid),
         .o_wb_value(),
         .o_wb_addr(),
         .o_jump(),
