@@ -29,8 +29,8 @@ module fetch_stage(
     
     // control inputs
     input wire in_ctrl_jump,
-    input wire [53:0] in_ctrl_jump_base,
-    input wire [53:0] in_ctrl_jump_offset
+    input wire [53:0] i_ctrl_jump_base,
+    input wire [53:0] i_ctrl_jump_offset
 );
     // program counter
     reg [52:0] r_pc;

@@ -67,6 +67,9 @@ module core(
     wire memory_valid;
     wire [63:0] memory_wb_value;
     wire [4:0] memory_wb_addr;
+    wire memory_jump;
+    wire [53:0] memory_jump_base;
+    wire [53:0] memory_jump_offset;
     
     wire [63:0] writeback_wb_value;
     wire [4:0] writeback_wb_addr;
@@ -84,9 +87,9 @@ module core(
         .o_valid(fetch_valid),
         .o_instr(fetch_instr),
         .o_pc(fetch_pc),
-        .in_ctrl_jump(),
-        .in_ctrl_jump_base(),
-        .in_ctrl_jump_offset()
+        .i_ctrl_jump(memory_jump),
+        .i_ctrl_jump_base(memory_jump_base),
+        .i_ctrl_jump_offset(memory_jump_offset)
     );
 
     decode_stage _decode (
@@ -112,9 +115,9 @@ module core(
         .o_jump(decode_jump),
         .o_branch(decode_branch),
         .o_branch_cond(decode_branch_cond),
-        .i_stall(),
-        .i_wb_addr(),
-        .i_wb_value(),
+        .i_stall(0),
+        .i_wb_addr(writeback_wb_addr),
+        .i_wb_value(writeback_wb_value),
         .o_rs1_addr(),
         .o_rs2_addr()
     );
@@ -148,21 +151,21 @@ module core(
         .o_jump(exec_jump),
         .o_link(exec_link),
         .o_wb_addr(exec_wb_addr),
-        .i_stall()
+        .i_stall(0)
     );
 
     memory_stage _memory (
         .i_clk(i_clk),
         .i_rst(i_rst),
-        .o_cyc(),
-        .o_stb(),
-        .o_we(),
-        .i_ack(),
-        .i_stall(),
-        .i_dat(),
-        .o_dat(),
-        .o_adr(),
-        .o_ready(),
+        .o_cyc(o_data_cyc),
+        .o_stb(o_data_stb),
+        .o_we(o_data_we),
+        .i_ack(i_data_ack),
+        .i_stall(i_data_stall),
+        .i_dat(i_data_dat),
+        .o_dat(o_data_dat),
+        .o_adr(o_data_adr),
+        .o_ready(memory_ready),
         .i_valid(exec_valid),
         .i_alu_result(exec_alu_result),
         .i_addr(exec_addr),
@@ -173,11 +176,11 @@ module core(
         .i_link(exec_link),
         .i_wb_addr(exec_wb_addr),
         .o_valid(memory_valid),
-        .o_wb_value(),
-        .o_wb_addr(),
-        .o_jump(),
-        .o_jump_base(),
-        .o_jump_offset()
+        .o_wb_value(memory_wb_value),
+        .o_wb_addr(memory_wb_value),
+        .o_jump(memory_jump),
+        .o_jump_base(memory_jump_base),
+        .o_jump_offset(memory_jump_offset)
     );
     
     writeback_stage _writeback (
