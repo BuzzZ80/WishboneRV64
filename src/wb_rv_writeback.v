@@ -10,14 +10,14 @@
 
 module writeback_stage (
     // generic control signals
-    input i_clk,
-    input i_rst,
+    input wire i_clk,
+    input wire i_rst,
     
     // always ready, no o_ready
-    input i_valid,
+    input wire i_valid,
     
-    input [63:0] i_wb_value,
-    input [4:0] i_wb_addr,
+    input wire [63:0] i_wb_value,
+    input wire [4:0] i_wb_addr,
     
     // control outputs
     output reg [63:0] o_wb_value,
