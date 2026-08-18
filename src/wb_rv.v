@@ -177,7 +177,7 @@ module core(
         .i_wb_addr(exec_wb_addr),
         .o_valid(memory_valid),
         .o_wb_value(memory_wb_value),
-        .o_wb_addr(memory_wb_value),
+        .o_wb_addr(memory_wb_addr),
         .o_jump(memory_jump),
         .o_jump_base(memory_jump_base),
         .o_jump_offset(memory_jump_offset)

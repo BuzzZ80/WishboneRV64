@@ -23,16 +23,18 @@ module writeback_stage (
     output reg [63:0] o_wb_value,
     output reg [4:0] o_wb_addr
 );  
+    reg r_valid;
     reg r_wb_value;
     reg r_wb_addr;
     
     always @ (posedge i_clk) begin
+        r_valid <= i_valid;
         r_wb_value <= i_wb_value;
         r_wb_addr <= i_wb_addr;
     end
     
     always @ (*) begin
         o_wb_value = r_wb_value;
-        o_wb_addr = r_wb_addr;
+        o_wb_addr = r_valid ? r_wb_addr : 0;
     end
 endmodule
